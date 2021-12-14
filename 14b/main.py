@@ -1,7 +1,7 @@
+from datetime import datetime
+from functools import lru_cache
 from collections import Counter
 from itertools import repeat, chain
-
-SENTINEL = '%'
 
 with open('input.txt', 'rt') as f:
     lines = [l.strip() for l in f.readlines()]
@@ -11,20 +11,28 @@ rules = {
     for l in lines[2:]
 }
 
-def main(template):
-    for _ in range(5):
-        template = [x for pair in zip(template, chain(repeat(SENTINEL, len(template)-1))) for x in pair] + [template[-1]]
-        for i, pair in enumerate(zip(template[:-1:2], template[2::2])):
-            x = rules.get(pair, SENTINEL)
-            template[2*i+1] = x
-        if SENTINEL in template:
-            template.remove(SENTINEL)
-    return template
+@lru_cache(maxsize=10_000_000)
+def expand(seq: str, steps: int = 1) -> str:
+    if steps == 1:
+        if len(seq) < 2:
+            raise ValueError
+        elif len(seq) == 2:
+            a, b = seq
+            return a + rules.get((a,b), '') + b
+        else:
+            new_seq = ''
+            for pair in zip(seq[:-1], seq[1:]):
+                pair_str = ''.join(pair)
+                new_seq += expand(pair_str)[:2]
+            new_seq += seq[-1]
+            return new_seq
+    else:
+        return expand(expand(seq, steps-1))
 
-template = main(template)
+N = 10
+final_template = expand(template, N)
 
-counter = Counter(template)
+counter = Counter(final_template)
 freqs = counter.values()
 result = max(freqs) - min(freqs)
-
 print(result)
