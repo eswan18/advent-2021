@@ -1,4 +1,8 @@
+cache = {}
+
 cpdef str expand(seq, int steps, dict rules):
+    if (seq, steps) in cache:
+        return cache[seq, steps]
     if len(seq) == 2:
         if steps == 1:
             a = seq[0]
@@ -13,4 +17,5 @@ cpdef str expand(seq, int steps, dict rules):
         first_pair_expanded = expand(first_pair, steps, rules)
         remainder_expanded = expand(remainder, steps, rules)
         result = first_pair_expanded[:-1] + remainder_expanded
+    cache[seq, steps] = result
     return result
