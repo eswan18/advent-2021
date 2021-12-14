@@ -3,7 +3,12 @@ from functools import lru_cache
 from collections import Counter
 from itertools import repeat, chain
 
-with open('test_input.txt', 'rt') as f:
+import pyximport
+pyximport.install()
+import expand
+
+
+with open('input.txt', 'rt') as f:
     lines = [l.strip() for l in f.readlines()]
 template = lines[0]
 rules = {
@@ -12,7 +17,7 @@ rules = {
 }
 
 @lru_cache(maxsize=10_000_000)
-def expand(seq: str, steps: int = 1) -> str:
+def old_expand(seq: str, steps: int = 1) -> str:
     if len(seq) < 2:
         raise ValueError
     elif len(seq) == 2:
@@ -29,9 +34,8 @@ def expand(seq: str, steps: int = 1) -> str:
         result = first_pair_expanded[:-1] + remainder_expanded
     return result
 
-N = 10
-final_template = expand(template, N)
-print(expand.cache_info())
+N = 20
+final_template = expand.expand(template, N, rules)
 
 counter = Counter(final_template)
 freqs = counter.values()
