@@ -32,7 +32,7 @@ class Board:
         s += '])'
         return s
  
-with open('test_input.txt', 'rt') as f:
+with open('input.txt', 'rt') as f:
     board = Board(
         [[int(x) for x in list(l.strip())] for l in f.readlines()]
     )
@@ -82,14 +82,19 @@ def make_path(path: tuple[tuple[int, int]], score: int) -> tuple[list[int, int],
         return make_path(new_path, new_score)
 
     
-N = 10000
+N = 1000000
 paths = []
+low_score = -1
 for i in range(N):
     if (i % 100) == 0:
         print(f'Starting iteration {i}')
     starting_paths = ( (0, 0),)
     path, score = make_path(starting_paths, 0)
     if path != -1:
-        paths.append((path, score))
+        print('FOUND A PATH')
+        # paths.append((path, score))
+        if low_score == -1 or score < low_score:
+            low_score = score
+            print(f'new low score! {low_score}')
 
 print(min(p[1] for p in paths))
