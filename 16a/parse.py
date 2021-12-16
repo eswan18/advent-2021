@@ -20,7 +20,8 @@ def parse_header(header: list[str]) -> tuple[int, int]:
     type_id = bits2int(header[3:])
     return version, type_id
 
-def parse_content(type_id: int, buffer: deque):
+def parse_packet(type_id: int, buffer: deque):
+    # Literal
     if type_id == 4:
         number_bits = []
         consumed = 6
@@ -36,8 +37,26 @@ def parse_content(type_id: int, buffer: deque):
                 break
         number = int(''.join(number_bits), base=2)
         return Literal(number)
-            
-    #elif type_id == 6:
+    # Operator 
     else:
-        raise ValueError
+        length_type_id, *_ = shift(buffer, 1)
+        if length_type_id == '0':
+            total_length = int(''.join(shift(buffer, 15)), base=2)
+            return {'L': total_length}
+        elif length_type_id == '1':
+            n_subpackets = int(''.join(shift(buffer, 11)), base=2)
+            return {'S': n_subpackets}
+        else:
+            raise ValueError
 
+def parse(buffer: deque):
+    while True:
+        header = shift(buffer, 6)
+        version, type_id = parse_header(header)
+        print(f'{(version, type_id)=}')
+        print(f'{buffer=}')
+        x = parse_packet(type_id, buffer)
+        print(f'{x=}')
+        print(f'{buffer=}')
+        break
+    assert len(buffer) == 0
