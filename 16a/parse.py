@@ -40,7 +40,27 @@ def parse_literal(version: int, buffer: deque) -> Literal:
     print(f'Parsed {result=}')
     return result
 
-#def parse_operator(version, buffer, 
+def parse_operator(version: int, buffer: deque) -> Operator:
+    length_type_id, *_ = shift(buffer, 1)
+    if length_type_id == '0':
+        print('Parsing op with bits')
+        bit_length = int(''.join(shift(buffer, 15)), base=2)
+        new_bits = shift(buffer, bit_length)
+        new_buffer = deque(new_bits)
+        subpax = []
+        while '1' in new_buffer:
+            subpax.append(parse(new_buffer))
+        return Operator(version, subpax)
+        print(f'Parsed {result=}')
+    elif length_type_id == '1':
+        print('Parsing op with subpax')
+        n_subpax = int(''.join(shift(buffer, 11)), base=2)
+        subpax = []
+        for _ in range(n_subpax):
+            subpax.append(parse(buffer))
+        return Operator(version, subpax)
+    else:
+        raise ValueError
 
 def parse_packet(version: int, type_id: int, buffer: deque):
     # Literal
@@ -49,23 +69,8 @@ def parse_packet(version: int, type_id: int, buffer: deque):
         return lit
     # Operator 
     else:
-        length_type_id, *_ = shift(buffer, 1)
-        if length_type_id == '0':
-            print('Parsing op with bits')
-            bit_length = int(''.join(shift(buffer, 15)), base=2)
-            new_bits = shift(buffer, bit_length)
-            new_buffer = deque(new_bits)
-            subpax = []
-            while '1' in new_buffer:
-                subpax.append(parse(new_buffer))
-            return Operator(version, subpax)
-            print(f'Parsed {result=}')
-        elif length_type_id == '1':
-            print('Parsing op with subpax')
-            n_subpackets = int(''.join(shift(buffer, 11)), base=2)
-            return {'S': n_subpackets}
-        else:
-            raise ValueError
+        op = parse_operator(version, buffer)
+        return op
 
 def parse(buffer: deque) -> list['Packet']:
     print(f'Parsing {"".join(buffer)}')
