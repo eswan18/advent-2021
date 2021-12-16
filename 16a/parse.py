@@ -45,6 +45,7 @@ def parse_operator(version: int, buffer: deque) -> Operator:
     if length_type_id == '0':
         print('Parsing op with bits')
         bit_length = int(''.join(shift(buffer, 15)), base=2)
+        print(bit_length)
         new_bits = shift(buffer, bit_length)
         new_buffer = deque(new_bits)
         subpax = []
