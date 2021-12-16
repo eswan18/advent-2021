@@ -10,6 +10,10 @@ with open('test_input_literal.txt', 'rt') as f:
 while True:
     header = shift(buffer, 6)
     version, type_id = parse_header(header)
-    parse_content(type_id, buffer)
-    content = content
+    print(f'{buffer=}')
+    literal = parse_content(type_id, buffer)
+    print(f'{literal=}')
+    print(f'{buffer=}')
     break
+
+assert len(buffer) == 0
