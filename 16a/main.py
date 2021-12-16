@@ -3,10 +3,9 @@ from collections import deque
 from bits import hex2bits
 from parse import shift, parse, Operator, Literal
 
-with open('test_input4.txt', 'rt') as f:
+with open('input.txt', 'rt') as f:
     content = hex2bits(f.read().strip())
     buffer = deque(content)
-print(''.join(list(buffer)))
 
 results = []
 while '1' in buffer:
@@ -16,7 +15,7 @@ while '1' in buffer:
     # If you consumed a number of bytes that isn't divisible by four, consume a couple more.
     extra_bits = len(buffer) % 4
     if extra_bits:
-        print(f'{shift(buffer, extra_bits)=}')
+        shift(buffer, extra_bits)
 
 # Assume it's an operator
 def sum_versions(node) -> int:
