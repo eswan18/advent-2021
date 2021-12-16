@@ -26,7 +26,7 @@ def parse_header(header: list[str]) -> tuple[int, int]:
     type_id = bits2int(header[3:])
     return version, type_id
 
-def parse_literal(version: int, buffer: deque, subpacket: bool) -> Literal:
+def parse_literal(version: int, buffer: deque) -> Literal:
     number_bits = []
     consumed = 6
     while True:
@@ -40,10 +40,12 @@ def parse_literal(version: int, buffer: deque, subpacket: bool) -> Literal:
     print(f'Parsed {result=}')
     return result
 
-def parse_packet(version: int, type_id: int, buffer: deque, subpacket: bool = False):
+#def parse_operator(version, buffer, 
+
+def parse_packet(version: int, type_id: int, buffer: deque):
     # Literal
     if type_id == 4:
-        lit = parse_literal(version, buffer, subpacket=subpacket)
+        lit = parse_literal(version, buffer)
         return lit
     # Operator 
     else:
@@ -55,7 +57,7 @@ def parse_packet(version: int, type_id: int, buffer: deque, subpacket: bool = Fa
             new_buffer = deque(new_bits)
             subpax = []
             while '1' in new_buffer:
-                subpax.append(parse(new_buffer, subpacket=True))
+                subpax.append(parse(new_buffer))
             return Operator(version, subpax)
             print(f'Parsed {result=}')
         elif length_type_id == '1':
@@ -65,10 +67,10 @@ def parse_packet(version: int, type_id: int, buffer: deque, subpacket: bool = Fa
         else:
             raise ValueError
 
-def parse(buffer: deque, subpacket: bool = False) -> list['Packet']:
+def parse(buffer: deque) -> list['Packet']:
     print(f'Parsing {"".join(buffer)}')
     header = shift(buffer, 6)
     version, type_id = parse_header(header)
     print(f'{(version, type_id)=}')
-    packet = parse_packet(version, type_id, buffer, subpacket)
+    packet = parse_packet(version, type_id, buffer)
     return packet
