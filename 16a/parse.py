@@ -7,6 +7,10 @@ from bits import bits2int
 class Literal:
     value: int
 
+@dataclass
+class Operator:
+    subpackets: list[Literal]
+
 def shift(dq: deque, n: int = 1) -> list:
     l = []
     for _ in range(n):
@@ -36,27 +40,32 @@ def parse_packet(type_id: int, buffer: deque):
                     shift(buffer, n_ignored)
                 break
         number = int(''.join(number_bits), base=2)
-        return Literal(number)
+        result = Literal(number)
+        print(f'Parsed {result=}')
+        return result
     # Operator 
     else:
         length_type_id, *_ = shift(buffer, 1)
         if length_type_id == '0':
-            total_length = int(''.join(shift(buffer, 15)), base=2)
-            return {'L': total_length}
+            bit_length = int(''.join(shift(buffer, 15)), base=2)
+            new_bits = shift(buffer, bit_length)
+            new_buffer = deque(new_bits)
+            subpackets = parse(new_buffer)
+            return Operator(subpackets=subpackets)
+            print(f'Parsed {result=}')
         elif length_type_id == '1':
             n_subpackets = int(''.join(shift(buffer, 11)), base=2)
             return {'S': n_subpackets}
         else:
             raise ValueError
 
-def parse(buffer: deque):
-    while True:
+def parse(buffer: deque) -> list['Packet']:
+    pax = []
+    while len(buffer) > 0:
+        print(f'Parsing {"".join(buffer)}')
         header = shift(buffer, 6)
         version, type_id = parse_header(header)
         print(f'{(version, type_id)=}')
-        print(f'{buffer=}')
-        x = parse_packet(type_id, buffer)
-        print(f'{x=}')
-        print(f'{buffer=}')
-        break
+        pax.append(parse_packet(type_id, buffer))
     assert len(buffer) == 0
+    return nodes
