@@ -9,7 +9,7 @@ class Node:
     parent: Optional['Node'] = field(repr=False)
 
     def is_root(self) -> bool:
-        return parent is not None
+        return self.parent is None
 
     def is_leaf(self) -> bool:
         return not hasattr(self, 'children')
@@ -43,12 +43,12 @@ class Node:
     def is_right(self) -> bool:
         if self.is_root():
             return False
-        return self == self.parent.right
+        return self is self.parent.right
 
     def is_left(self) -> bool:
         if self.is_root():
             return False
-        return self == self.parent.left
+        return self is self.parent.left
 
     def next_left_leaf(self) -> Optional['LeafNode']:
         current = self
@@ -125,6 +125,39 @@ class BranchNode(Node):
         else:
             self.parent.right = zero
 
+    def reduce(self) -> None:
+        # Explode the first 4-deep pair.
+        for n in self.dfs():
+            if n.depth == 4 and not n.is_leaf():
+                n.explode()
+                return
 
     def __str__(self) -> str:
         return f'[{str(self.left)},{str(self.right)}]'
+
+    @classmethod
+    def from_line(cls, line: str) -> 'BranchNode':
+        assert line[0] == '['
+        assert line[-1] == ']'
+        line = line[1:-1]
+        bracket_count = 0
+        for i, c in enumerate(line):
+            if c == '[':
+                bracket_count += 1
+            elif c == ']':
+                bracket_count -= 1
+            elif c == ',' and bracket_count == 0:
+                left = line[:i]
+                right = line[i+1:]
+                if '[' in left:
+                    left = cls.from_line(left)
+                else:
+                    left = LeafNode(parent=None, value=int(left))
+                if '[' in right:
+                    right = cls.from_line(right)
+                else:
+                    right = LeafNode(parent=None, value=int(right))
+                node = BranchNode(parent=None, left=left, right=right)
+                node.left.parent = node
+                node.right.parent = node
+                return node
