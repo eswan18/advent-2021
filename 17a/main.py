@@ -3,7 +3,7 @@ from itertools import product
 from dataclasses import dataclass
 
 
-with open('test_input.txt', 'rt') as f:
+with open('input.txt', 'rt') as f:
     coord_str = f.readline().split(':')[1].strip()
     x_str, y_str = [s.split('=')[1] for s in coord_str.split(', ')]
     x_min, x_max = [int(x) for x in x_str.split('..')]
@@ -24,7 +24,7 @@ class Probe:
         elif self.dx < 0:
             self.dx += 1
         self.dy -= 1
-    
+
     def in_target(self) -> bool:
         return (
             x_min <= self.x <= x_max
@@ -55,9 +55,9 @@ class Probe:
         return result
 
 
-dx_range = range(0, x_max)
-# The largest dy to check is an arbitrarily large number I picked.
-dy_range = range(y_min, (10 + y_max + x_min))
+# These maximum numbers are arbitrary and I feel bad about it.
+dx_range = range(0, x_max+20)
+dy_range = range(y_min, (100 + y_max + x_min))
 
 all_time_high_y = y_min
 i = 0
