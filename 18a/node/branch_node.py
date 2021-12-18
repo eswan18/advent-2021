@@ -1,3 +1,4 @@
+from copy import deepcopy
 from dataclasses import dataclass
 
 from .node import Node, LeafNode
@@ -9,9 +10,11 @@ class BranchNode(Node):
     right: Node
 
     def __add__(self, other: 'BranchNode') -> 'BranchNode':
-        left = deepcopy(self)
-        right = deepcopy(other)
-        return self.__class__(parent=None, left=left, right=right)
+        left = self.from_line(str(self))
+        right = self.from_line(str(other))
+        new = self.__class__(parent=None, left=left, right=right)
+        new.fully_reduce()
+        return new
 
     @property
     def children(self) -> tuple[Node, Node]:
@@ -50,6 +53,11 @@ class BranchNode(Node):
                 n.split()
                 return True
         return False
+
+    def fully_reduce(self) -> None:
+        reducible = True
+        while reducible:
+            reducible = self.reduce()
 
     def __str__(self) -> str:
         return f'[{str(self.left)},{str(self.right)}]'

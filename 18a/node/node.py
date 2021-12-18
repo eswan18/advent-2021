@@ -25,7 +25,7 @@ class Node:
             yield n.parent
             n = n.parent
 
-    @cached_property
+    @property
     def depth(self) -> int:
         if self.parent:
             return self.parent.depth + 1
