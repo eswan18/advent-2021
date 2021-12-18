@@ -1,4 +1,3 @@
-from copy import deepcopy
 from node import LeafNode, BranchNode
 
 
@@ -33,4 +32,6 @@ with open('test_input.txt', 'rt') as f:
     numbers = [parse_number(l.strip()) for l in f.readlines()]
 
 for n in numbers:
+    print(repr(n))
     print(n)
+    print(parse_number('[1,2]') + parse_number('[[3,4],5]'))

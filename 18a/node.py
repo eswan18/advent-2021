@@ -1,3 +1,4 @@
+from copy import deepcopy
 from functools import cached_property
 from typing import Optional, Iterator
 from dataclasses import dataclass, field
@@ -48,6 +49,9 @@ class LeafNode(Node):
         cls_name = self.__class__.__name__
         return f'{cls_name}({self.value})'
 
+    def __str__(self) -> str:
+        return str(self.value)
+
 @dataclass
 class BranchNode(Node):
     left: Node
@@ -56,8 +60,11 @@ class BranchNode(Node):
     def __add__(self, other: 'BranchNode') -> 'BranchNode':
         left = deepcopy(self)
         right = deepcopy(other)
-        return self.__class__(left, right)
+        return self.__class__(parent=None, left=left, right=right)
 
     @property
     def children(self) -> tuple[Node, Node]:
         return (self.left, self.right)
+
+    def __str__(self) -> str:
+        return f'[{str(self.left)},{str(self.right)}]'
