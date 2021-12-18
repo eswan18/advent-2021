@@ -1,7 +1,11 @@
 from copy import deepcopy
 from functools import cached_property
-from typing import Optional, Iterator
+from typing import Optional, Iterator, TYPE_CHECKING
 from dataclasses import dataclass, field
+
+
+if TYPE_CHECKING:
+    from branch_node import BranchNode
 
 
 @dataclass
@@ -90,74 +94,21 @@ class LeafNode(Node):
     def __str__(self) -> str:
         return str(self.value)
 
-@dataclass
-class BranchNode(Node):
-    left: Node
-    right: Node
-
-    def __add__(self, other: 'BranchNode') -> 'BranchNode':
-        left = deepcopy(self)
-        right = deepcopy(other)
-        return self.__class__(parent=None, left=left, right=right)
-
-    @property
-    def children(self) -> tuple[Node, Node]:
-        return (self.left, self.right)
-
-    def explode(self) -> None:
-        if self.is_root():
-            raise TypeError
-        if not self.left.is_leaf() or not self.right.is_leaf():
-            raise TypeError
-        # Add the values to the next left- and right-most leaves.
-        left_v = self.left.value
-        right_v = self.right.value
-        next_left_leaf = self.next_left_leaf()
-        if next_left_leaf:
-            next_left_leaf.value += left_v
-        next_right_leaf = self.next_right_leaf()
-        if next_right_leaf:
-            next_right_leaf.value += right_v
-        # Replace this node with a leaf node of value 0.
-        zero = LeafNode(parent=self.parent, value=0)
+    def split(self) -> None:
+        from .branch_node import BranchNode
+        if self.value % 2: # odd
+            left_v = self.value // 2
+            right_v = (self.value // 2) + 1
+        else: # even
+            left_v = self.value // 2
+            right_v = self.value // 2
+        left = LeafNode(parent=None, value=left_v)
+        right = LeafNode(parent=None, value=right_v)
+        new_branch = BranchNode(parent=self.parent, left=left, right=right)
+        left.parent = new_branch
+        right.parent = new_branch
+        # Replace this node with the new branch
         if self.is_left():
-            self.parent.left = zero
+            self.parent.left = new_branch
         else:
-            self.parent.right = zero
-
-    def reduce(self) -> None:
-        # Explode the first 4-deep pair.
-        for n in self.dfs():
-            if n.depth == 4 and not n.is_leaf():
-                n.explode()
-                return
-
-    def __str__(self) -> str:
-        return f'[{str(self.left)},{str(self.right)}]'
-
-    @classmethod
-    def from_line(cls, line: str) -> 'BranchNode':
-        assert line[0] == '['
-        assert line[-1] == ']'
-        line = line[1:-1]
-        bracket_count = 0
-        for i, c in enumerate(line):
-            if c == '[':
-                bracket_count += 1
-            elif c == ']':
-                bracket_count -= 1
-            elif c == ',' and bracket_count == 0:
-                left = line[:i]
-                right = line[i+1:]
-                if '[' in left:
-                    left = cls.from_line(left)
-                else:
-                    left = LeafNode(parent=None, value=int(left))
-                if '[' in right:
-                    right = cls.from_line(right)
-                else:
-                    right = LeafNode(parent=None, value=int(right))
-                node = BranchNode(parent=None, left=left, right=right)
-                node.left.parent = node
-                node.right.parent = node
-                return node
+            self.parent.right = new_branch
