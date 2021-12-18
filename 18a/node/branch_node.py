@@ -1,4 +1,3 @@
-from copy import deepcopy
 from dataclasses import dataclass
 
 from .node import Node, LeafNode
@@ -13,6 +12,8 @@ class BranchNode(Node):
         left = self.from_line(str(self))
         right = self.from_line(str(other))
         new = self.__class__(parent=None, left=left, right=right)
+        left.parent = new
+        right.parent = new
         new.fully_reduce()
         return new
 
@@ -88,3 +89,6 @@ class BranchNode(Node):
                 node.left.parent = node
                 node.right.parent = node
                 return node
+
+    def magnitude(self) -> int:
+        return 3 * self.left.magnitude() + 2 * self.right.magnitude()

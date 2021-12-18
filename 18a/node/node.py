@@ -1,4 +1,3 @@
-from copy import deepcopy
 from functools import cached_property
 from typing import Optional, Iterator, TYPE_CHECKING
 from dataclasses import dataclass, field
@@ -112,3 +111,6 @@ class LeafNode(Node):
             self.parent.left = new_branch
         else:
             self.parent.right = new_branch
+
+    def magnitude(self) -> int:
+        return self.value

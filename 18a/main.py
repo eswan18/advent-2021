@@ -1,7 +1,10 @@
-from node import LeafNode, BranchNode
+from functools import reduce
+from node import BranchNode
 
-with open('test_input.txt', 'rt') as f:
+with open('input.txt', 'rt') as f:
     numbers = [BranchNode.from_line(l.strip()) for l in f.readlines()]
 
-for n in numbers:
-    print(n)
+result = reduce(lambda x, y: x + y, numbers)
+result.reduce()
+print(result)
+print(result.magnitude())
