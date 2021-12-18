@@ -1,20 +1,8 @@
-from typing import Union
+from copy import deepcopy
+from node import LeafNode, BranchNode
 
 
-class Number:
-    def __init__(
-        self,
-        left: Union['Number', int],
-        right: Union['Number', int],
-    ):
-        self.left = left
-        self.right = right
-
-    def __repr__(self) -> str:
-        return f'[{self.left!r}, {self.right!r}]'
-
-
-def parse_number(line) -> Number:
+def parse_number(line) -> BranchNode:
     assert line[0] == '['
     assert line[-1] == ']'
     line = line[1:-1]
@@ -30,16 +18,19 @@ def parse_number(line) -> Number:
             if '[' in left:
                 left = parse_number(left)
             else:
-                left = int(left)
+                left = LeafNode(parent=None, value=int(left))
             if '[' in right:
                 right = parse_number(right)
             else:
-                right = int(right)
-            return Number(left, right)
+                right = LeafNode(parent=None, value=int(right))
+            node = BranchNode(parent=None, left=left, right=right)
+            node.left.parent = node
+            node.right.parent = node
+            return node
 
 
 with open('test_input.txt', 'rt') as f:
     numbers = [parse_number(l.strip()) for l in f.readlines()]
 
 for n in numbers:
-    print(repr(n))
+    print(n)
