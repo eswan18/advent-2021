@@ -1,11 +1,16 @@
+from math import sqrt
 from dataclasses import dataclass
 import re
+from functools import cached_property
+from itertools import combinations
 from typing import Optional, Iterator
-from collections import namedtuple
+from collections import namedtuple, defaultdict
 
 Coord = namedtuple('Coord', 'x,y,z')
 
 SCANNER_PATTERN = re.compile(r'--- scanner (\d+)')
+# How many common distances would exist across 12 points.
+MIN_OVERLAP = sum(range(12))
 
 @dataclass
 class Scanner:
@@ -24,6 +29,14 @@ class Scanner:
             for line in lines if len(line) > 0
         ]
         return cls(number, beacons)
+    
+    def offset(self, x: int = 0, y: int = 0, z: int = 0) -> 'Scanner':
+        new_beacons = [Coord(x0+x, y0+y, z0+z) for (x0, y0, z0) in self.beacons]
+        return self.__class__(
+            number=self.number,
+            beacons=new_beacons,
+            location=self.location,
+        )
     
     def rotated(self, rotation:int = 1) -> 'Scanner':
         '''
@@ -112,6 +125,45 @@ class Scanner:
             yield f.rotated(2)
             yield f.rotated(3)
 
+    @cached_property
+    def distance_map(self) -> dict[float, set[Coord]]:
+        result = {}
+        for b1, b2 in combinations(self.beacons, 2):
+            x0, y0, z0 = b1
+            x1, y1, z1 = b2
+            d = sqrt((x0 - x1) ** 2 + (y0 - y1) ** 2 + (z0 - z1) ** 2)
+            if d not in result:
+                result[d] = {b1, b2}
+            else:
+                result[d].add(b1)
+                result[d].add(b2)
+        return result
+
+    @cached_property
+    def coord_distances(self) -> dict[Coord, set[float]]:
+        result = defaultdict(set)
+        for b1, b2 in combinations(self.beacons, 2):
+            x0, y0, z0 = b1
+            x1, y1, z1 = b2
+            d = sqrt((x0 - x1) ** 2 + (y0 - y1) ** 2 + (z0 - z1) ** 2)
+            result[b1].add(d)
+            result[b2].add(d)
+        return dict(result)
+
+    @cached_property
+    def distance_set(self) -> set[float]:
+        result = set()
+        for b1, b2 in combinations(self.beacons, 2):
+            x0, y0, z0 = b1
+            x1, y1, z1 = b2
+            d = sqrt((x0 - x1) ** 2 + (y0 - y1) ** 2 + (z0 - z1) ** 2)
+            result.add(round(d, 3))
+        return result
+    
+    def overlaps(self, other: 'Scanner', min_overlap: int = MIN_OVERLAP) -> bool:
+        overlap = self.distance_set & other.distance_set
+        return len(overlap) >= min_overlap
+
     def __iter__(self) -> Iterator[Coord]:
         return iter(self.beacons)
 
@@ -120,3 +172,6 @@ class Scanner:
         for x, y, z in self.beacons:
             s += f'{x},{y},{z}\n'
         return s
+
+    def __len__(self) -> int:
+        return len(self.beacons)
