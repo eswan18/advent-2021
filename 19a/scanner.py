@@ -227,15 +227,16 @@ class Scanner:
             else:
                 facing = cls.facing_down
         else: # abs(z1) == abs(x2):
-            if z1 == z2:
-                facing = cls.facing_left
-            else:
+            if z1 == x2:
                 facing = cls.facing_right
+            else:
+                facing = cls.facing_left
         # To make life easier, transform c2_vector based on this facing before figuring
         # out rotation.
         c2_vector = facing(cls(number=0, beacons=[c2_vector])).beacons[0]
         x2, y2, z2 = c2_vector
         if z2 != z1:
+            print(facing)
             raise RuntimeError
         # Now figure out how to rotate to get x & y to match.
         if x1 == x2:
