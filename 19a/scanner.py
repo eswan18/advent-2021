@@ -1,7 +1,7 @@
 from math import sqrt
 from dataclasses import dataclass
 import re
-from functools import cached_property
+from functools import cached_property, partial
 from itertools import combinations
 from typing import Optional, Iterator
 from collections import namedtuple, defaultdict
@@ -38,7 +38,7 @@ class Scanner:
             location=self.location,
         )
     
-    def rotated(self, rotation:int = 1) -> 'Scanner':
+    def rotated(self, rotation: int = 1) -> 'Scanner':
         '''
         A scanner with the same coords, from the perspective of "up" being N/4 rotations clockwise.
         '''
@@ -241,11 +241,11 @@ class Scanner:
         if x1 == x2:
             rotate = lambda x: x
         elif x1 == y2:
-            rotate = cls.rotated(3)
+            rotate = partial(cls.rotated, rotation=3)
         elif x1 == -1 * x2:
-            rotate = cls.rotated(2)
+            rotate = partial(cls.rotated, rotation=2)
         else: # x1 == -y2:
-            rotate = cls.rotated(1)
+            rotate = partial(cls.rotated, rotation=1)
         # Transform c2 again to check our work
         c2_vector = rotate(cls(number=0, beacons=[c2_vector])).beacons[0]
         assert tuple(c2_vector) == c1_vector
@@ -278,7 +278,15 @@ class Scanner:
         offset = self.find_offset(other)
         other = other.offset(*offset)
         # Check that there are a bunch of overlapping points.
-        return None
+        overlapping = set(self.beacons) & set(other.beacons)
+        if len(overlapping) < 12:
+            raise RuntimeError
+        new_beacons = list(set(self.beacons) | set(other.beacons))
+        return self.__class__(
+            number=self.number,
+            beacons=new_beacons,
+            location=self.location
+        )
 
     def __iter__(self) -> Iterator[Coord]:
         return iter(self.beacons)
