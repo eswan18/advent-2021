@@ -3,7 +3,7 @@ from collections import namedtuple, Counter
 from functools import cache
 from typing import Iterator
 
-with open('test_input.txt', 'rt') as f:
+with open('input.txt', 'rt') as f:
     p1_str, p2_str = [l.strip() for l in f.readlines()]
 
 
@@ -28,7 +28,7 @@ start = Universe(
 )
 
 
-#@cache
+@cache
 def advance_by_roll(u: Universe, roll: int) -> Universe:
     player = u.next_up
     if player == 'p1':
@@ -56,6 +56,7 @@ def advance_by_roll(u: Universe, roll: int) -> Universe:
             next_up='p1',
         )
 
+@cache
 def get_winners(universe) -> Counter:
     if universe.p1_score >= 21:
         return Counter({'p1': 1})
@@ -75,4 +76,4 @@ def multiply(c: Counter, m: int):
         c_new += c
     return c_new
 
-get_winners(start)
+print(get_winners(start))
