@@ -5,7 +5,7 @@ from cuboid import Cuboid, OutOfBoundsError, DEFAULT_CUBOID_RANGES
 
 C_Range = tuple[int, int]
 
-FILENAME = 'test_input_a.txt'
+FILENAME = 'input.txt'
 cuboid = Cuboid()
 
 @dataclass
@@ -58,13 +58,12 @@ with open(FILENAME, 'rt') as f:
 
 cubes = set()
 for step in steps:
-    print(step.text)
     if step.in_bounds():
-        cuboid[step.cuboid_slice] = step.on
+        #cuboid[step.cuboid_slice] = step.on
         new_cubes = set(step.cubes)
         if step.on:
             cubes = cubes.union(new_cubes)
         else:
             cubes = cubes.difference(new_cubes)
-    print(cuboid.on_count)
+    #print(cuboid.on_count)
     print(len(cubes))
