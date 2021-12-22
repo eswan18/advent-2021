@@ -1,99 +1,70 @@
+from __future__ import annotations
+from dataclasses import dataclass
+
+from cuboid import Cuboid, OutOfBoundsError, DEFAULT_CUBOID_RANGES 
+
 C_Range = tuple[int, int]
-C_Slice = slice
-C_Range_3d = tuple[C_Range, C_Range, C_Range]
-C_Slice_3d = tuple[C_Slice, C_Slice, C_Slice]
 
-DEFAULT_CUBOID_RANGES = (
-    (-50, 50),
-    (-50, 50),
-    (-50, 50),
-)
+FILENAME = 'test_input_a.txt'
+cuboid = Cuboid()
 
-with open('test_input_a.txt', 'rt') as f:
-    lines = [l.strip() for l in f.readlines()]
+@dataclass
+class Step:
+    text: str
+    on: bool
+    x: slice[int, int, None]
+    y: slice[int, int, None]
+    z: slice[int, int, None]
 
-class Cuboid:
-    def __init__(
-        self,
-        x_range: C_Range = DEFAULT_CUBOID_RANGES[0],
-        y_range: C_Range = DEFAULT_CUBOID_RANGES[1],
-        z_range: C_Range = DEFAULT_CUBOID_RANGES[2],
-    ):
-        self.x_range = x_range
-        self.y_range = y_range
-        self.z_range = z_range
-        self._cubes = [
-            [
-                [False for _ in range(*x_range)]
-                for _ in range(*y_range)
-            ]
-            for _ in range(*z_range)
+    @classmethod
+    def from_string(cls, s: str) -> Step:
+        on_str, slice_str = s.split(' ')
+        on = True if on_str == 'on' else False
+        x_str, y_str, z_str = slice_str.split(',')
+        # Nothing to see here, just a normal, concise list comprehension.
+        x, y, z = [
+            tuple(int(a) for a in s.split('=')[1].split('..'))
+            for s in slice_str.split(',')
         ]
+        x, y, z = (slice(*a) for a in (x, y, z))
+        return cls(text=s, on=on, x=x, y=y, z=z)
 
     @property
-    def x_min(self) -> int:
-        return self.x_range[0]
+    def cuboid_slice(self) -> tuple[slice, slice, slice]:
+        return (self.x, self.y, self.z)
 
-    @property
-    def y_min(self) -> int:
-        return self.y_range[0]
-
-    @property
-    def z_min(self) -> int:
-        return self.z_range[0]
-
-    def _normalize_slices(self, slices: C_Slice_3d) -> C_Slice_3d:
-        '''
-        Adjust a cuboid range so we can use it as a direct index into self._cubes.
-
-        Since ranges don't always (and usually don't) start at 0, they don't line up
-        with our internal indices until adjusted.
-
-        Also validate that all slice bounds are within the cuboid.
-        '''
-        # No steps allowed
-        if not all(s.step is None for s in slices):
-            raise TypeError
-        # Adjust indices to be offset by how far in the negatives our ranges go.
-        mins, maxes = zip(self.x_range, self.y_range, self.z_range)
-        max_indices = tuple(max_-min_ for min_, max_ in zip(mins, maxes))
-        result = tuple(
-            slice(s.start - min_, s.stop - min_) for s, min_ in zip(slices, mins)
-        )
-        # Our cuboid is wildly unpythonic, and thus ranges are inclusive on both sides.
-        result = tuple(slice(s.start, s.stop+1) for s in result)
-        # Validation
-        if not all (s.start >= 0 for s in result):
-            raise ValueError('Bad start')
-        if not all (s.stop <= (max_+1) for s, max_ in zip(result, max_indices)):
-            raise ValueError('Bad stop')
-        return result
-
-    def __getitem__(self, key: C_Slice_3d) -> bool:
-        x_range, y_range, z_range = self._normalize_slices(key)
-        return [
-            [column[x_range] for column in plane[y_range]]
-            for plane in self._cubes[z_range]
-        ]
-        return self._cubes[z_range][y_range][x_range]
-
-    def __setitem__(self, key: tuple[C_Range, C_Range, C_Range], on: bool) -> None:
-        x_slice, y_slice, z_slice = self._normalize_slices(key)
-        # Make `on` an iterable that can be set in-place in columns.
-        x_len = x_slice.stop - x_slice.start
-        on_repeat = [on] * x_len
-        for plane in self._cubes[z_slice]:
-            for column in plane[y_slice]:
-                column[x_slice] = on_repeat
-
-    def step(
+    def in_bounds(
         self,
-        x_range: C_Range,
-        y_range: C_Range,
-        z_range: C_Range,
-        on: bool,
-    ) -> None:
-        self[slice(*x_range), slice(*y_range), slice(*z_range)] = on
+        bounds: Tuple[C_Range, C_Range, C_Range] = DEFAULT_CUBOID_RANGES,
+    ) -> bool:
+        x_bound, y_bound, z_bound = bounds
+        if self.x.start < x_bound[0] or self.x.stop > x_bound[1]:
+            return False
+        if self.y.start < y_bound[0] or self.y.stop > y_bound[1]:
+            return False
+        if self.z.start < z_bound[0] or self.z.stop > z_bound[1]:
+            return False
+        return True
 
-cube = Cuboid()
+    @property
+    def cubes(self) -> Iterator[tuple[int, int, int]]:
+        for x in range(self.x.start, self.x.stop+1):
+            for y in range(self.y.start, self.y.stop+1):
+                for z in range(self.z.start, self.z.stop+1):
+                    yield (x, y, z)
 
+with open(FILENAME, 'rt') as f:
+    steps = [Step.from_string(l.strip()) for l in f.readlines()]
+
+cubes = set()
+for step in steps:
+    print(step.text)
+    if step.in_bounds():
+        cuboid[step.cuboid_slice] = step.on
+        new_cubes = set(step.cubes)
+        if step.on:
+            cubes = cubes.union(new_cubes)
+        else:
+            cubes = cubes.difference(new_cubes)
+    print(cuboid.on_count)
+    print(len(cubes))
