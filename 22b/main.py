@@ -23,14 +23,16 @@ class Step:
 with open(FILENAME, 'rt') as f:
     steps = [Step.from_string(l.strip()) for l in f.readlines()]
 
-# Start by throwing out any cuboids that are fully covered by cuboids after them.
-cuboids = []
+# Start by throwing out any steps with cuboids that are fully covered by steps after them.
+keep: list[Step] = []
 for s in reversed(steps):
-    if any(c.contains(s.cuboid) for c in cuboids):
-        container = [c for c in cuboids if c.contains(s.cuboid)]
+    if any(k.cuboid.contains(s.cuboid) for k in keep):
+        container = [k for k in keep if k.cuboid.contains(s.cuboid)]
         c = container[0]
         print(f'{s.cuboid}\nis contained by\n{c}\n')
     else:
-        cuboids.append(s.cuboid)
+        keep.append(s)
 
-print(len(cuboids))
+# Do the rest of our work with only the steps worth keeping.
+steps = keep
+print(len(keep))
