@@ -5,7 +5,8 @@ from cuboid import Cuboid, Bound
 
 FILENAME = 'test_input.txt'
 
-@dataclass
+
+@dataclass(frozen=True)
 class Step:
     text: str = field(repr=False)
     on: bool
@@ -13,30 +14,23 @@ class Step:
 
     @classmethod
     def from_string(cls, s: str) -> Step:
-        on_str, slice_str = s.split(' ')
+        on_str, cuboid_str = s.split(' ')
         on = True if on_str == 'on' else False
-        x_str, y_str, z_str = slice_str.split(',')
-        # Nothing to see here, just a normal, concise list comprehension.
-        x, y, z = [
-            tuple(int(a) for a in s.split('=')[1].split('..'))
-            for s in slice_str.split(',')
-        ]
-        x, y, z = (Bound(*a) for a in (x, y, z))
-        return cls(text=s, on=on, cuboid=Cuboid(x, y, z))
+        cuboid = Cuboid.from_string(cuboid_str)
+        return cls(text=s, on=on, cuboid=cuboid)
+
 
 with open(FILENAME, 'rt') as f:
     steps = [Step.from_string(l.strip()) for l in f.readlines()]
-for s in steps:
-    print(s)
-c = Cuboid(Bound(10, 12), Bound(10,12), Bound(10,12))
-print(c.volume)
-lksjdflksdjf
 
-cubes = set()
-for step in steps:
-    new_cubes = set(step.cubes)
-    if step.on:
-        cubes = cubes.union(new_cubes)
+# Start by throwing out any cuboids that are fully covered by cuboids after them.
+cuboids = []
+for s in reversed(steps):
+    if any(c.contains(s.cuboid) for c in cuboids):
+        container = [c for c in cuboids if c.contains(s.cuboid)]
+        c = container[0]
+        print(f'{s.cuboid}\nis contained by\n{c}\n')
     else:
-        cubes = cubes.difference(new_cubes)
-    print(len(cubes))
+        cuboids.append(s.cuboid)
+
+print(len(cuboids))
