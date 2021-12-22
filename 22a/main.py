@@ -78,10 +78,13 @@ class Cuboid:
         return self._cubes[z_range][y_range][x_range]
 
     def __setitem__(self, key: tuple[C_Range, C_Range, C_Range], on: bool) -> None:
-        x_range, y_range, z_range = key
-        for plane in self._cubes[z_range]:
-            for column in plane[y_range]:
-                column[x_range] = on
+        x_slice, y_slice, z_slice = self._normalize_slices(key)
+        # Make `on` an iterable that can be set in-place in columns.
+        x_len = x_slice.stop - x_slice.start
+        on_repeat = [on] * x_len
+        for plane in self._cubes[z_slice]:
+            for column in plane[y_slice]:
+                column[x_slice] = on_repeat
 
     def step(
         self,
