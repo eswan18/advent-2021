@@ -26,15 +26,28 @@ class Bound:
     def __contains__(self, other: Union[Bound, int]) -> bool:
         return self.contains(other)
 
+    def common(self, other: Bound) -> Optional[Bound]:
+        '''
+        Get the common segment of two bounds.
+        '''
+        start = self.start if self.start >= other.start else other.start
+        stop = self.stop if self.stop <= other.stop else other.stop
+        if stop >= start:
+            return Bound(start, stop)
+        else:
+            return None
+
     def overlap(self, other: Bound) -> int:
         '''
         Get the volume of the overlap of two bounds.
         '''
         start = self.start if self.start >= other.start else other.start
         stop = self.stop if self.stop <= other.stop else other.stop
-        length = (stop - start) + 1
-        return max(length, 0)
-        
+        common = self.common(other)
+        if common:
+            return (common.stop - common.start) + 1
+        else:
+            return 0
 
     @classmethod
     def from_string(cls, s: str) -> Bound:
