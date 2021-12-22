@@ -44,15 +44,28 @@ class Cuboid:
     def corners(self) -> tuple[tuple[int, int, int], ...]:
         return tuple(product(self.x, self.y, self.z))
 
+    def common(self, other: Cuboid) -> Optional[Cuboid]:
+        '''
+        Get the common space of two cuboids.
+        '''
+        bounds = []
+        for bound_a, bound_b in zip(self.bounds, other.bounds):
+            common = bound_a.common(bound_b)
+            if common is None:
+                return None
+            else:
+                bounds.append(common)
+        return Cuboid(*bounds)
+
     def overlap(self, other: Cuboid) -> int:
         '''
         Get the volume of the overlap of two cuboids.
         '''
-        if other.volume > self.volume:
-            bigger, smaller = other, self
+        common = self.common(other)
+        if common is not None:
+            return common.volume
         else:
-            bigger, smaller = self, other
-        # Check if any corners of the smaller cuboid are within the bigger.
+            return 0
         running_overlap = 1
         for bound_a, bound_b in zip(self.bounds, other.bounds):
             overlap = bound_a.overlap(bound_b)
@@ -61,15 +74,6 @@ class Cuboid:
             else:
                 running_overlap *= overlap
         return running_overlap
-        # TODO: delete
-        if any(bigger.contains(pt) for pt in smaller.corners):
-            return reduce(lambda x, y: x * y, (
-                self.x.overlap(other.x),
-                self.y.overlap(other.y), 
-                self.z.overlap(other.z), 
-            ))
-        else:
-            return 0
 
     @property
     def bounds(self) -> tuple[Bound, Bound, Bound]:

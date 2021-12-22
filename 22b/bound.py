@@ -41,10 +41,8 @@ class Bound:
         '''
         Get the volume of the overlap of two bounds.
         '''
-        start = self.start if self.start >= other.start else other.start
-        stop = self.stop if self.stop <= other.stop else other.stop
         common = self.common(other)
-        if common:
+        if common is not None:
             return (common.stop - common.start) + 1
         else:
             return 0
