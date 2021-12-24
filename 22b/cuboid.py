@@ -1,5 +1,5 @@
 from __future__ import annotations
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from itertools import product
 from functools import cached_property
 
@@ -11,6 +11,7 @@ class Cuboid:
     x: Bound
     y: Bound
     z: Bound
+    dynamic_data: dict[str, Any] = field(default_factory=dict)
 
     @property
     def volume(self) -> int:
@@ -84,3 +85,6 @@ class Cuboid:
         bound_strs = (a.split('=')[1] for a in s.split(','))
         x, y, z = (Bound.from_string(b) for b in bound_strs)
         return cls(x=x, y=y, z=z)
+    
+    def __str__(self) -> str:
+        return f'x={self.x},y={self.y},z={self.z}'

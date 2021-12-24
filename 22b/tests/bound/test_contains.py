@@ -34,6 +34,16 @@ def test_some_overlap():
 
 test_some_overlap()
 
+def test_some_overlap2():
+    a = Bound(-34, -15)
+    b = Bound(-15, -5)
+    assert a not in b
+    assert b not in a
+    assert a.overlap(b) == 1
+    assert b.overlap(a) == 1
+
+test_some_overlap()
+
 def test_shared_border():
     a = Bound(-34, -13)
     b = Bound(-13, 0)

@@ -30,6 +30,8 @@ class Bound:
         '''
         Get the common segment of two bounds.
         '''
+        if self.stop < other.start or self.start > other.stop:
+            return None
         start = self.start if self.start >= other.start else other.start
         stop = self.stop if self.stop <= other.stop else other.stop
         if stop >= start:
@@ -47,6 +49,8 @@ class Bound:
         else:
             return 0
 
+    
+
     @classmethod
     def from_string(cls, s: str) -> Bound:
         start, stop = (int(x) for x in s.split('..'))
@@ -56,3 +60,5 @@ class Bound:
         yield self.start
         yield self.stop
 
+    def __str__(self) -> str:
+        return f'{self.start}..{self.stop}'
