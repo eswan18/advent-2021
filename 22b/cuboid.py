@@ -1,6 +1,6 @@
 from __future__ import annotations
 from dataclasses import dataclass, field
-from itertools import product
+from itertools import product, combinations
 from functools import cached_property
 
 from bound import Bound
@@ -76,6 +76,29 @@ class Cuboid:
                 running_overlap *= overlap
         return running_overlap
 
+    def uncovered_volume(self, layers: Iterable[Cuboid]) -> int:
+        '''
+        How much of this cuboid's volume is left uncovered, given other cuboids?
+        '''
+        # Find the spaces where this cuboid overlaps with other, already-seen layers --
+        # that volume shouldn't be included in the volume it covers.
+        overlapping_cuboids = [
+            l for l in (l.common(self) for l in layers) if l is not None
+        ]
+
+        naive_overlapping_volume = sum(oc.volume for oc in overlapping_cuboids)
+        # Overlapping areas may overlap with each other, causing the overlap to be
+        # double- (or triple-, or ...) counted.
+        redundant_overlap_volume = sum(
+            a.overlap(b) for a, b in combinations(overlapping_cuboids, 2)
+        )
+
+        overlapping_volume = naive_overlapping_volume - redundant_overlap_volume
+        
+        # Figure out how much volume this new cuboid covers.
+        covered_volume = self.volume - overlapping_volume
+        return covered_volume
+
     @property
     def bounds(self) -> tuple[Bound, Bound, Bound]:
         return (self.x, self.y, self.z)
@@ -85,6 +108,6 @@ class Cuboid:
         bound_strs = (a.split('=')[1] for a in s.split(','))
         x, y, z = (Bound.from_string(b) for b in bound_strs)
         return cls(x=x, y=y, z=z)
-    
+
     def __str__(self) -> str:
         return f'x={self.x},y={self.y},z={self.z}'
