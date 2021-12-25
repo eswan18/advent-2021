@@ -3,8 +3,7 @@ from __future__ import annotations
 from step import Step
 from cuboid import Cuboid
 
-FILENAME = 'test_input.txt'
-
+FILENAME = 'input.txt'
 
 
 with open(FILENAME, 'rt') as f:
@@ -14,7 +13,7 @@ with open(FILENAME, 'rt') as f:
 # them.
 layers: list[Cuboid] = []
 
-for s in reversed(steps[:4]):
+for s in reversed(steps):
     cuboid = s.cuboid
     print(f'Looking at cuboid {cuboid}')
     if any(l.contains(cuboid) for l in layers):
