@@ -67,14 +67,6 @@ class Cuboid:
             return common.volume
         else:
             return 0
-        running_overlap = 1
-        for bound_a, bound_b in zip(self.bounds, other.bounds):
-            overlap = bound_a.overlap(bound_b)
-            if overlap == 0:
-                return 0
-            else:
-                running_overlap *= overlap
-        return running_overlap
 
     def uncovered_volume(self, layers: Iterable[Cuboid]) -> int:
         '''
