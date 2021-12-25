@@ -1,12 +1,15 @@
 from __future__ import annotations
 from dataclasses import dataclass
 
-from cuboid import Cuboid, OutOfBoundsError, DEFAULT_CUBOID_RANGES 
+DEFAULT_CUBOID_RANGES = (
+    (-50, 50),
+    (-50, 50),
+    (-50, 50),
+)
 
 C_Range = tuple[int, int]
 
 FILENAME = 'input.txt'
-cuboid = Cuboid()
 
 @dataclass
 class Step:
