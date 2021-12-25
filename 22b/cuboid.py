@@ -1,7 +1,7 @@
 from __future__ import annotations
 from dataclasses import dataclass, field
 from itertools import product, combinations
-from functools import cached_property
+from functools import cached_property, reduce
 
 from bound import Bound
 
@@ -81,9 +81,16 @@ class Cuboid:
         naive_overlapping_volume = sum(oc.volume for oc in overlapping_cuboids)
         # Overlapping areas may overlap with each other, causing the overlap to be
         # double- (or triple-, or ...) counted.
-        redundant_overlap_volume = sum(
-            a.overlap(b) for a, b in combinations(overlapping_cuboids, 2)
-        )
+        redundant_overlap_volume = 0
+        for n in range(2, len(overlapping_cuboids) + 1):
+            for combo in combinations(overlapping_cuboids, n):
+                common = reduce(lambda a, b: a.common(b) if a and b else None, combo)
+                if common:
+                    # I hate that I don't know why this works.
+                    if n % 2 == 0:
+                        redundant_overlap_volume += common.volume
+                    else:
+                        redundant_overlap_volume -= common.volume
 
         overlapping_volume = naive_overlapping_volume - redundant_overlap_volume
         
