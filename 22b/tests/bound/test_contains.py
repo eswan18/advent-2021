@@ -42,7 +42,7 @@ def test_some_overlap2():
     assert a.overlap(b) == 1
     assert b.overlap(a) == 1
 
-test_some_overlap()
+test_some_overlap2()
 
 def test_shared_border():
     a = Bound(-34, -13)
@@ -53,3 +53,13 @@ def test_shared_border():
     assert b.overlap(a) == 1
 
 test_shared_border()
+
+def test_regression():
+    a = Bound(-26, 28)
+    b = Bound(-50, -1)
+    assert a not in b
+    assert b not in a
+    assert a.overlap(b) == 26
+    assert b.overlap(a) == 26
+
+test_regression()
