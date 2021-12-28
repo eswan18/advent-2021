@@ -14,6 +14,9 @@ nodes = set(movements.keys())
 
 @cache
 def distance(_from: str, _to: str) -> int:
+    if _to == _from:
+        return 0
+
     reachable = movements[_from]
     if _to in reachable:
         return 1
