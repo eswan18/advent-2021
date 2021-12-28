@@ -1,9 +1,12 @@
 from __future__ import annotations
+from operator import xor
+from functools import reduce
 from dataclasses import dataclass, field
 
+from locations import rooms
 from distance import nodes
 
-@dataclass
+@dataclass(frozen=True)
 class Board:
     _board: dict[str, Optional[str]]
 
@@ -47,7 +50,35 @@ class Board:
                 locations[loc] = color
         return Board(locations)
 
+    @cache
+    def locations_of(color: str) -> tuple[str, str]:
+        return tuple(s for s in self if self[s] == color)
 
+    def with_move(_from: str, _to: str) -> Board:
+        occupant = self[_from]
+        if occupant is None:
+            raise ValueError('Invalid move; no occupant of space')
+        new_locations = self._board.copy()
+        new_locations[_from] = None
+        new_locations[_to] = occupant
+        return Board(new_locations)
+
+    def available_moves(self) -> list[tuple[tuple[str, str], int]]:
+        '''
+        Get a list of ((from, to), cost) tuples.
+        '''
+        moves = []
+        a1, a2 = locations_of(a)
+        b1, b2 = locations_of(b)
+        c1, c2 = locations_of(c)
+        d1, d2 = locations_of(d)
+
+
+    def is_solved(self) -> bool:
+        for loc, color in rooms.items():
+            if self[loc] != color:
+                return False
+        return True
 
     def __str__(self) -> str:
         s = '#' * 13 + '\n'
@@ -62,11 +93,22 @@ class Board:
     def __iter__(self):
         return iter(self._board)
 
+    def __eq__(self, other: Board) -> bool:
+        if not isinstance(other, Board):
+            return NotImplemented
+        return self._board == other._board
+
+    def __hash__(self) -> int:
+        if hasattr(self, '_hash'):
+            return self._hash
+        else:
+            b = self._board
+            h = reduce(xor, hash(b[l]) for l in 'abcdefghijklmnopqrs')
+            self._hash = h
+            return h
+
 
 @dataclass(order=True)
 class BoardState:
-    iterations: int
+    cost: int
     board: Board = field(compare=False)
-
-def locations_of(color: str, locations: Board) -> tuple[str, str]:
-    return tuple(s for s in locations if locations[s] == color)
