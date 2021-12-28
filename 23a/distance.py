@@ -10,6 +10,7 @@ for line in lines:
     _movements[node_b].add(node_a)
 
 movements = dict(_movements)
+nodes = set(movements.keys())
 
 @cache
 def distance(_from: str, _to: str) -> int:
@@ -20,7 +21,6 @@ def distance(_from: str, _to: str) -> int:
         for i in range(2, 11):
             next_reachable = set()
             for n in reachable:
-                print(f'Now can reach {n}')
                 next_reachable = next_reachable.union(movements[n])
             reachable = next_reachable
             if _to in reachable:
