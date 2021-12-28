@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from functools import cache
+from functools import cache, reduce
 from collections import defaultdict
 
 _movements = defaultdict(set)
@@ -22,15 +22,30 @@ def shortest_path(_from: str, _to: str) -> tuple[str]:
     paths = [(_from,)]
     for i in range(1, 11):
         next_paths = []
-        for p in paths:
+        for path in paths:
             reachable_nodes = movements[path[-1]]
             if _to in reachable_nodes:
                 return path + (_to,)
-            next_paths.extend([path + n for n in reachable_nodes])
+            next_paths.extend([path + (n,) for n in reachable_nodes])
         paths = next_paths
 
 def distance(_from: str, _to: str) -> int:
-    return len(shortest_path(_from, _to))
+    return len(shortest_path(_from, _to)) - 1
+
+@cache
+def n_away(node: str, n: int) -> set[str]:
+    '''Get nodes n moves away from a given node.'''
+    for i in range(11):
+        if i == 0:
+            reachable = {node}
+        else:
+            newly_reachable = reduce(set.union, (movements[n] for n in reachable))
+            # Remove nodes that were already reachable.
+            newly_reachable = newly_reachable - reachable
+            # Update the reachable list
+            reachable = reachable.union(newly_reachable)
+        if n == i:
+            return newly_reachable
 
 def is_legal(_from: str, _to: str, color: str, locations: dict[str, Optional[str]]) -> bool:
     # If the amphipod is moving to a room where it doesn't belong.
