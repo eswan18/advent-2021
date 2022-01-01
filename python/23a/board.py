@@ -6,6 +6,8 @@ from dataclasses import dataclass, field
 from locations import rooms
 from distance import nodes
 
+COSTS = {'A': 1, 'B': 10, 'C': 100, 'D': 1000}
+
 @dataclass(frozen=True)
 class Board:
     _board: dict[str, Optional[str]]
@@ -63,16 +65,19 @@ class Board:
         new_locations[_to] = occupant
         return Board(new_locations)
 
-    def available_moves(self) -> list[tuple[tuple[str, str], int]]:
+    def cheapest_legal_moves(self) -> Iterator[tuple[int, tuple[str, str]]]:
         '''
-        Get a list of ((from, to), cost) tuples.
+        Get (cost, (from, to)) tuples, starting with the cheapest.
         '''
-        moves = []
-        a1, a2 = locations_of(a)
-        b1, b2 = locations_of(b)
-        c1, c2 = locations_of(c)
-        d1, d2 = locations_of(d)
-
+        # Because the longest route is length 10, and each amphipod's cost increases by
+        # 10x, A will always have the cheapest moves, followed by B, then C, then D.
+        for color in ('A', 'B', 'C', 'D'):
+            a1, a2 = locations_of(color)
+            for dist in range(1, 11):
+                a1_moves = [(a1, _to) for _to in n_away(a1, dist) if is_legal(a1, _to)]
+                a2_moves = [(a2, _to) for _to in n_away(a2, dist) if is_legal(a2, _to)]
+                cost = dist * COSTS[color]
+                yield from ((cost, move) for move in chain(a1_moves, a2_moves))
 
     def is_solved(self) -> bool:
         for loc, color in rooms.items():
