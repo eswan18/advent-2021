@@ -22,7 +22,7 @@ class BingoBoard
   end
 
   def wins?
-    @marks.map{ |line| line.map{ |x| x == "X"}.all?}.any?
+    wins_row? or wins_col?
   end
 
   private
@@ -32,6 +32,15 @@ class BingoBoard
       return i, j if j
     end
     nil
+  end
+
+  def wins_row?
+    @marks.map{ |line| line.map{ |x| x == "X"}.all?}.any?
+  end
+
+  def wins_col?
+    cols = @marks.transpose
+    cols.map{ |line| line.map{ |x| x == "X"}.all?}.any?
   end
 
 end
