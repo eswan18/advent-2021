@@ -1,6 +1,6 @@
 require_relative "bingo_board"
 
-FILENAME = "test_input.txt"
+FILENAME = "input.txt"
 file = File.open(FILENAME)
 lines = file.readlines.map(&:chomp)
 draws, _, *boards = lines
