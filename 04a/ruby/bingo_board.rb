@@ -25,6 +25,18 @@ class BingoBoard
     wins_row? or wins_col?
   end
 
+  def unmarked
+    result = []
+    @rows.each_with_index do |row, i|
+      row.each_with_index do |elem, j|
+        if @marks[i][j] != 'X'
+          result << elem
+        end
+      end
+    end
+    result
+  end
+
   private
   def coordinates_of(num)
     @rows.each_with_index do |subarray, i|
