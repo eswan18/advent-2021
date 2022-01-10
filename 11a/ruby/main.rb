@@ -1,14 +1,15 @@
 require_relative "octopus"
 
-FILENAME = "test_input.txt"
+FILENAME = "minitest_input.txt"
 
 lines = File.open(FILENAME).readlines
 values = lines.map(&:chomp).map{|line| line.split("").map(&:to_i)}
-x = Octopus::Grid.new(values)
-puts x
+grid = Octopus::Grid.new(values)
 
-p [1, 3]
-p x.adjacent_to([1, 3])
-
-p [0, 0]
-p x.adjacent_to([0, 0])
+puts grid
+puts "\n"
+for i in (1..4)
+  grid.turn
+  puts grid
+  puts "\n"
+end
