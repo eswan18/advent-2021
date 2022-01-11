@@ -31,7 +31,7 @@ module Digits
   end
 
   class Display
-    attr_reader :correspondence
+    attr_reader :correspondence, :output_glyphs
     attr_accessor :seen_digits
     def initialize(unknown_glyphs, output_glyphs)
       @seen_digits = []
@@ -71,7 +71,7 @@ module Digits
       end 
     end
     def self.from_string(s)
-      signal, output = s.split("|").map{|x| x.split(" ").map{|y| y.split""}}
+      signal, output = s.split("|").map{|x| x.split(" ").map{|y| y.split("")}}
       self.new(signal, output)
     end
   end
