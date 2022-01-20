@@ -9,37 +9,26 @@ Rules = Hash[
   end
 ]
 
-# A hash of hashes
+# A hash of hashes: {[pair, N] => sequence}
 Cache = Hash.new{ | hash, key| hash[key] = {} }
 
 class Array
   def update(times=1)
-    if times == 1
-      new_seq = clone
-      (length-1).times do |i|
-        insertion = Rules.fetch(self[i] + self[i+1])
-        new_seq.insert(2*i+1, insertion)
-      end
-      new_seq
-    elsif times == 10
-      if Cache[10].include?(self)
-        Cache[10][self]
+    # print "updating #{self} #{times} times"
+    if size == 1
+      raise RuntimeError
+    elsif size == 2
+      insertion = Rules.fetch(self.join)
+      seq = [self[0], insertion, self[1]]
+      if times == 1
+        seq
+      elsif times > 1
+        seq.update(times-1)
       else
-        seq = self
-        10.times do
-          seq = seq.update
-        end
-        Cache[10][self] = seq
-      end
-    elsif times == 20
-      if Cache[20].include?(self)
-        Cache[20][self]
-      else
-        result = update(10).update(10)
-        Cache[20][self] = result
+        raise RuntimeError
       end
     else
-      raise RuntimeError "Bad number of times"
+      result = self[0..1].update(times)[0..-2] + self[1..].update(times)
     end
   end
   def value_counts
@@ -54,5 +43,5 @@ class Array
   end
 end
 
-sequence = sequence.update(20)
+sequence = sequence.update(10)
 p sequence.max_minus_min
